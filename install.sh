@@ -3,7 +3,7 @@
 # Функция для установки конфига по умолчанию
 default_install() {
   echo "Запуск install_easy.sh..."
-  if ! sudo "$HOME/Library/zapret/install_easy.sh"; then
+  if ! sudo /opt/zapret/install_easy.sh; then
     echo "Ошибка: не удалось запустить install_easy.sh."
   fi
 }
@@ -32,7 +32,7 @@ while true; do
   if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#configs[@]}" ]; then
     selected_config="${configs[$((choice-1))]}"
     echo "Установка конфига $(basename "$selected_config")..."
-    if ! cp "$selected_config" "$HOME/Library/zapret/config"; then
+    if ! cp "$selected_config" "/opt/zapret/config"; then
       echo "Ошибка: не удалось скопировать конфиг."
       exit 1
     fi

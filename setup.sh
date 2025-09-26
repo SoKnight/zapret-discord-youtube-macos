@@ -32,11 +32,11 @@ mkdir -p "$HOME/tmp"
 rm -rf "$HOME/tmp/*"
 
 # Бэкап запрета если есть
-if [ -d "$HOME/Library/zapret" ]; then
+if [ -d "/opt/zapret" ]; then
   echo "Создание резервной копии существующего zapret..."
-  cp -r "$HOME/Library/zapret" "$HOME/Library/zapret.bak"
+  sudo cp -r "/opt/zapret" "/opt/zapret.bak"
 fi
-rm -rf "$HOME/Library/zapret"
+sudo rm -rf "/opt/zapret"
 
 # Получение последней версии zapret с GitHub API
 echo "Определение последней версии zapret..."
@@ -96,15 +96,10 @@ fi
 
 echo "Найден распакованный каталог: $ZAPRET_EXTRACT_DIR"
 
-# Создаём ~/Library/zapret при отсутствии
-if ! [ -d "$HOME/Library/zapret"]; then
-  mkdir -p "$HOME/Library/zapret"
-fi
-
-# Перемещение zapret в ~/Library/zapret
-echo "Перемещение zapret в ~/Library/zapret..."
-if ! mv "$ZAPRET_EXTRACT_DIR" "$HOME/Library/zapret"; then
-  echo "Ошибка: не удалось переместить zapret в ~/Library/zapret."
+# Перемещение zapret в /opt/zapret
+echo "Перемещение zapret в /opt/zapret..."
+if ! mv "$ZAPRET_EXTRACT_DIR" "/opt/zapret"; then
+  echo "Ошибка: не удалось переместить zapret в /opt/zapret."
   exit 1
 fi
 
@@ -120,7 +115,7 @@ fi
 
 # Копирование hostlists
 echo "Копирование hostlists..."
-if ! cp -r "$HOME/zapret-configs/hostlists" ~/Library/zapret/hostlists; then
+if ! cp -r "$HOME/zapret-configs/hostlists" /opt/zapret/hostlists; then
   echo "Ошибка: не удалось скопировать hostlists."
   exit 1
 fi
