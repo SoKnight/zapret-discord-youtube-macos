@@ -1,7 +1,10 @@
 # Zapret (обход блокировки Discord'а и YouTube'а)
 
 > [!NOTE]  
-> Данный репозиторий — **некоммерческая** *User-Friendly* сборка [оригинального репозитория](https://github.com/bol-van/zapret). Здесь используются оригинальные бинарники, сравнить которые вы можете с помощью хэша.
+> Данный репозиторий — **некоммерческая** *User-Friendly* сборка [оригинального репозитория](https://github.com/bol-van/zapret).
+> Здесь используются оригинальные бинарники, сравнить которые вы можете с помощью хэша.
+> 
+> Скрипт был адаптирован под работу на macOS с Homebrew.
 > 
 > Так как zapret — open-source, вы всегда можете сами собрать эти бинарники и не бояться вирусов.
 > 
@@ -14,9 +17,9 @@
 
 ## Установка и использование
 
-### Установка на Linux
+### Установка на macOS
 
-Для удобства установки и настройки zapret на Linux был создан автоматизированный скрипт. Следуйте инструкциям ниже:
+Для удобства установки и настройки zapret на macOS был создан автоматизированный скрипт. Следуйте инструкциям ниже:
 
 > [!TIP]  
 > Установите **curl** для скачивания и запуска скрипта
@@ -24,12 +27,12 @@
 **Скачайте и запустите скрипт установки:**
 
    ```bash
-   bash <(curl -s https://raw.githubusercontent.com/kartavkun/zapret-discord-youtube/main/setup.sh)
+   bash <(curl -s https://raw.githubusercontent.com/SoKnight/zapret-discord-youtube-macos/main/setup.sh)
    ```
 
   Если не работает, то запустите другую команду ([Спасибо, RekQu](https://github.com/kartavkun/zapret-discord-youtube/discussions/16#discussioncomment-13573048)):
   ```bash
-  bash <(curl -s https://raw.githubusercontent.com/kartavkun/zapret-discord-youtube/main/setup.sh | psub)
+  bash <(curl -s https://raw.githubusercontent.com/SoKnight/zapret-discord-youtube-macos/main/setup.sh | psub)
   ```
 
 Этот скрипт:
@@ -41,45 +44,6 @@
 - Клонирует этот репозиторий с конфигами.
 
 - Запустит интерактивное меню для выбора конфигурации.
-
-Для пользователей NixOS доступен flake с декларативной настройкой:
-
->[!NOTE]
-> Flake на данный момент находится в тестовом виде! см [#17 (comment)](https://github.com/kartavkun/zapret-discord-youtube/issues/17#issuecomment-3182802350 )
->
-> для поддержки flake в nixos пропишите в файле `/etc/nixos/configuration.nix` (см. подробнее [Flakes](https://wiki.nixos.org/wiki/Flakes/ru))
->
-```nix
-nix.settings.experimental-features = [ "nix-command" "flakes" ];
-```
-
-```nix
-# В вашем flake.nix
-{
-  description = "NixOS configuration with zapret-discord-youtube";
-
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    zapret-discord-youtube.url = "github:kartavkun/zapret-discord-youtube;
-  };
-
-  outputs = { self, nixpkgs, zapret-discord-youtube }: {
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        ./configuration.nix
-        zapret-discord-youtube.nixosModules.default
-        {
-          services.zapret-discord-youtube = {
-            enable = true;
-            config = "general(МГТС)";  # любой конфиг из configs (general, general(ALT), general(МГТС) и т.д.)
-          };
-        }
-      ];
-    };
-  };
-}
-```
 
 ### Использование
 
@@ -121,27 +85,17 @@ sudo /opt/zapret/uninstall_easy.sh
 
 ## Добавление дополнительных адресов заблокированных сайтов
 
-Если хотите обойти другие сайты, то я написал [гайд от себя](https://github.com/kartavkun/zapret-discord-youtube/discussions/2#discussion-7902158). Если есть люди более знающие, то я приму конструктивную критику :D
+Если хотите обойти другие сайты, то **kartavkun** написал [гайд](https://github.com/kartavkun/zapret-discord-youtube/discussions/2#discussion-7902158).
 
 ## Проверено на:
-- [Arch Linux](https://archlinux.org/) (i use Arch btw)
-- [Void Linux](https://voidlinux.org/)
-- [Slackware Linux](http://www.slackware.com/)
-- [Alpine linux](https://www.alpinelinux.org/)
-- [Solus](https://getsol.us/)
-- [AntiX Linux](https://antixlinux.com/)
-- [Pop!_OS](https://system76.com/pop/)
-- [Ubuntu 18.04+](https://ubuntu.com/)
-- [Kubuntu](https://kubuntu.org/)
-- [NixOS](https://nixos.org/) (через flake)
+- macOS 15.6.1 Sequoia
 
 ## Поддержка
 
 Вы можете поддержать проект, поставив :star: (сверху справа этой страницы)!
-Лучше всего [задонатьте мне денюжку](https://t.me/kartavslinks/8) :) 
+Лучше всего [задонатьте мне денюжку](https://t.me/kartavslinks/8) автору оригинального репозитория со скриптами под Linux :) 
 
 Также, вы можете поддержать разработчика оригинального репозитория zapret тут — https://github.com/bol-van/zapret/issues/590
-<a href="https://star-history.com/#kartavkun/zapret-discord-youtube&Date"> <picture> <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=kartavkun/zapret-discord-youtube&type=Date&theme=dark" /> <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=kartavkun/zapret-discord-youtube&type=Date" /> <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=kartavkun/zapret-discord-youtube&type=Date" /> </picture> </a>
 
 ## Благодарности
 
@@ -149,8 +103,10 @@ sudo /opt/zapret/uninstall_easy.sh
 
 - Благодарность [Flowseal](https://github.com/Flowseal) за конфигурации, которые были адаптированы для этого репозитория.
 
+- Благодарность [kartavkun](https://github.com/kartavkun) за исходный репозиторий со скриптами под Linux.
+
 Примечания
 
-- Если у вас возникли проблемы с использованием zapret на Linux, задавайте вопросы в [оригинальном репозитории](https://github.com/bol-van/zapret/issues), предоставляя конфиг из `/opt/zapret/config`.
+- Если у вас возникли проблемы с использованием zapret на macOS, задавайте вопросы в [оригинальном репозитории](https://github.com/bol-van/zapret/issues), предоставляя конфиг из `/opt/zapret/config`.
 
-- Этот репозиторий предназначен для упрощения настройки zapret на Linux. Все вопросы, связанные с Windows, следует задавать в [репозитории Flowseal](https://github.com/Flowseal/zapret-discord-youtube).
+- Этот репозиторий предназначен для упрощения настройки zapret на macOS. Все вопросы, связанные с Windows, следует задавать в [репозитории Flowseal](https://github.com/Flowseal/zapret-discord-youtube).
