@@ -98,7 +98,7 @@ echo "Найден распакованный каталог: $ZAPRET_EXTRACT_DI
 
 # Перемещение zapret в /opt/zapret
 echo "Перемещение zapret в /opt/zapret..."
-if ! mv "$ZAPRET_EXTRACT_DIR" "/opt/zapret"; then
+if ! sudo mv "$ZAPRET_EXTRACT_DIR" "/opt/zapret"; then
   echo "Ошибка: не удалось переместить zapret в /opt/zapret."
   exit 1
 fi
@@ -115,7 +115,7 @@ fi
 
 # Копирование hostlists
 echo "Копирование hostlists..."
-if ! cp -r "$HOME/zapret-configs/hostlists" /opt/zapret/hostlists; then
+if ! sudo cp -r "$HOME/zapret-configs/hostlists" /opt/zapret/hostlists; then
   echo "Ошибка: не удалось скопировать hostlists."
   exit 1
 fi
