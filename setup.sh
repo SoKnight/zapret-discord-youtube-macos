@@ -3,26 +3,8 @@
 # Функция установки пакетов с разными пакетными менеджерами
 install_packages() {
   case "$1" in
-    apt)
-      sudo apt update && sudo apt install -y wget git ;;
-    nala)
-      sudo nala update && sudo nala install -y wget git ;;
-    yum)
-      sudo yum install -y wget git ;;
-    dnf)
-      sudo dnf install -y wget git ;;
-    pacman)
-      sudo pacman -Sy --noconfirm wget git ;;
-    zypper)
-      sudo zypper install -y wget git ;;
-    xbps-install)
-      sudo xbps-install -Sy wget git ipset iptables nftables cronie ;;
-    slapt-get)
-      sudo slapt-get -i --no-prompt wget git ;;
-    apk)
-      sudo apk add wget git ;;
-    eopkg)
-      sudo eopkg update-repo && sudo eopkg install wget git ;;
+    brew)
+      brew install wget git ;;
     *)
       echo "Неизвестный пакетный менеджер: $1"
       return 1 ;;
@@ -34,36 +16,9 @@ if command -v wget &>/dev/null && command -v git &>/dev/null; then
   echo "wget и git уже установлены, продолжаем..."
 else
   # Определяем пакетный менеджер и выполняем установку
-  if command -v nala &>/dev/null; then
-    echo "Обнаружен nala, устанавливаем wget и git..."
-    install_packages nala
-  elif command -v apt &>/dev/null; then
-    echo "Обнаружен apt, устанавливаем wget и git..."
-    install_packages apt
-  elif command -v yum &>/dev/null; then
-    echo "Обнаружен yum, устанавливаем wget и git..."
-    install_packages yum
-  elif command -v dnf &>/dev/null; then
-    echo "Обнаружен dnf, устанавливаем wget и git..."
-    install_packages dnf
-  elif command -v pacman &>/dev/null; then
-    echo "Обнаружен pacman, устанавливаем wget и git..."
-    install_packages pacman
-  elif command -v zypper &>/dev/null; then
-    echo "Обнаружен zypper, устанавливаем wget и git..."
-    install_packages zypper
-  elif command -v xbps-install &>/dev/null; then
-    echo "Обнаружен xbps, устанавливаем wget и git..."
-    install_packages xbps-install
-  elif command -v slapt-get &>/dev/null; then
-    echo "Обнаружен slapt-get, устанавливаем wget и git..."
-    install_packages slapt-get
-  elif command -v apk &>/dev/null; then
-    echo "Обнаружен apk, устанавливаем wget и git..."
-    install_packages apk
-  elif command -v eopkg &>/dev/null; then
-    echo "Обнаружен eopkg, устанавливаем wget и git..."
-    install_packages eopkg
+  if command -v brew &>/dev/null; then
+    echo "Обнаружен brew, устанавливаем wget и git..."
+    install_packages brew
   else
     echo "Не удалось определить пакетный менеджер."
     echo "Необходимо установить wget и git вручную."
@@ -77,11 +32,11 @@ mkdir -p "$HOME/tmp"
 rm -rf "$HOME/tmp/*"
 
 # Бэкап запрета если есть
-if [ -d "/opt/zapret" ]; then
+if [ -d "$HOME/Library/zapret" ]; then
   echo "Создание резервной копии существующего zapret..."
-  sudo cp -r "/opt/zapret" "/opt/zapret.bak"
+  cp -r "$HOME/Library/zapret" "$HOME/Library/zapret.bak"
 fi
-sudo rm -rf "/opt/zapret"
+rm -rf "$HOME/Library/zapret"
 
 # Получение последней версии zapret с GitHub API
 echo "Определение последней версии zapret..."
@@ -141,24 +96,23 @@ fi
 
 echo "Найден распакованный каталог: $ZAPRET_EXTRACT_DIR"
 
-# Проверяем, является ли система Solus, если да, то создаём /opt/
-if [ -f "/etc/os-release" ] && grep -q "^ID=solus" /etc/os-release; then
-    echo "Директория /opt/ не существует, создаём..."
-    sudo mkdir -p /opt/
+# Создаём ~/Library/zapret при отсутствии
+if ! [ -d "$HOME/Library/zapret"]; then
+  mkdir -p "$HOME/Library/zapret"
 fi
 
-# Перемещение zapret в /opt/zapret
-echo "Перемещение zapret в /opt/zapret..."
-if ! sudo mv "$ZAPRET_EXTRACT_DIR" /opt/zapret; then
-  echo "Ошибка: не удалось переместить zapret в /opt/zapret."
+# Перемещение zapret в ~/Library/zapret
+echo "Перемещение zapret в ~/Library/zapret..."
+if ! mv "$ZAPRET_EXTRACT_DIR" "$HOME/Library/zapret"; then
+  echo "Ошибка: не удалось переместить zapret в ~/Library/zapret."
   exit 1
 fi
 
 # Клонирование репозитория с конфигами
 echo "Клонирование репозитория с конфигами..."
-if ! git clone https://github.com/kartavkun/zapret-discord-youtube.git "$HOME/zapret-configs"; then
+if ! git clone https://github.com/SoKnight/zapret-discord-youtube-macos.git "$HOME/zapret-configs"; then
   rm -rf $HOME/zapret-configs
-  if ! git clone https://github.com/kartavkun/zapret-discord-youtube.git "$HOME/zapret-configs"; then
+  if ! git clone https://github.com/SoKnight/zapret-discord-youtube-macos.git "$HOME/zapret-configs"; then
     echo "Ошибка: не удалось клонировать репозиторий с конфигами."
   exit 1
   fi
@@ -166,29 +120,10 @@ fi
 
 # Копирование hostlists
 echo "Копирование hostlists..."
-if ! cp -r "$HOME/zapret-configs/hostlists" /opt/zapret/hostlists; then
+if ! cp -r "$HOME/zapret-configs/hostlists" ~/Library/zapret/hostlists; then
   echo "Ошибка: не удалось скопировать hostlists."
   exit 1
 fi
-
-# Настройка IP forwarding для WireGuard
-echo "Проверка и настройка IP forwarding для WireGuard..."
-if [ ! -f "/etc/sysctl.d/99-sysctl.conf" ]; then
-  echo "Создание конфигурационного файла /etc/sysctl.d/99-sysctl.conf..."
-  echo "# Конфигурация для zapret" | sudo tee /etc/sysctl.d/99-sysctl.conf > /dev/null
-  echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.d/99-sysctl.conf > /dev/null
-else
-  # Проверяем, содержит ли файл уже параметр ip_forward
-  if ! grep -q "net.ipv4.ip_forward=1" /etc/sysctl.d/99-sysctl.conf; then
-    echo "Добавление параметра net.ipv4.ip_forward=1 в /etc/sysctl.d/99-sysctl.conf..."
-    echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.d/99-sysctl.conf > /dev/null
-  else
-    echo "Параметр net.ipv4.ip_forward=1 уже установлен"
-  fi
-fi
-
-# Применяем настройки без перезагрузки
-sudo sysctl -p /etc/sysctl.d/99-sysctl.conf
 
 # Запуск второго скрипта
 echo "Запуск install.sh..."
