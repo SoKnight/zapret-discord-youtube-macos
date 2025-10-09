@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Функция для установки конфига по умолчанию
+# Основная функция установки
 default_install() {
   echo "Запуск install_easy.sh..."
   if ! sudo /opt/zapret/install_easy.sh; then

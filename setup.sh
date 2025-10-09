@@ -35,6 +35,7 @@ rm -rf "$HOME/tmp/*"
 if [ -d "/opt/zapret" ]; then
   echo "Создание резервной копии существующего zapret..."
   sudo cp -r "/opt/zapret" "/opt/zapret.bak"
+  sudo chown -R $(stat -c '%Su:%Sg' "/opt/zapret") "/opt/zapret.bak"
 fi
 sudo rm -rf "/opt/zapret"
 
@@ -98,7 +99,7 @@ echo "Найден распакованный каталог: $ZAPRET_EXTRACT_DI
 
 # Перемещение zapret в /opt/zapret
 echo "Перемещение zapret в /opt/zapret..."
-if ! sudo mv "$ZAPRET_EXTRACT_DIR" "/opt/zapret"; then
+if ! sudo mv "$ZAPRET_EXTRACT_DIR" /opt/zapret; then
   echo "Ошибка: не удалось переместить zapret в /opt/zapret."
   exit 1
 fi
@@ -122,7 +123,7 @@ fi
 
 # Запуск второго скрипта
 echo "Запуск install.sh..."
-if ! bash "$HOME/zapret-configs/install.sh"; then
+if ! bash -i "$HOME/zapret-configs/install.sh" < /dev/tty > /dev/tty 2>&1; then
   echo "Ошибка: не удалось запустить install.sh."
   exit 1
 fi
