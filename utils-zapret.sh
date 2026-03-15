@@ -313,24 +313,19 @@ add_domains_menu() {
 
 # Функция запуска тестов zapret
 run_zapret_tests() {
-  local test_script="$HOME/zapret-configs/utils/test-zapret.lua"
-  
+  local test_script="$HOME/zapret-configs/utils/test-zapret.sh"
+
   if [ ! -f "$test_script" ]; then
     echo -e "${RED}Ошибка: тестовый скрипт не найден ($test_script)${RESET}"
     return 1
   fi
-  
-  if ! command -v lua &>/dev/null; then
-    echo -e "${RED}Ошибка: lua не установлена${RESET}"
-    return 1
-  fi
-  
+
   echo
   echo -e "${GREEN}Запуск тестирования конфигураций zapret...${RESET}"
   echo "Это может занять несколько минут."
   echo
-  
-  lua "$test_script"
+
+  zsh "$test_script"
 }
 
 # Основное меню
