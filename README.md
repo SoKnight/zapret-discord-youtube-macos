@@ -5,6 +5,11 @@
 >
 > 🔒 **Безопасность**: Используются оригинальные бинарники с проверяемыми хэшами. Так как zapret — open-source, вы всегда можете самостоятельно собрать бинарники из исходного кода.
 
+> [!CAUTION]
+> **Голосовые каналы в Discord не будут работать через zapret на macOS!**<br>
+> Discord использует UDP (порты 19294-19344, 50000-50100), а на macOS zapret работает только через tpws, который поддерживает исключительно TCP.<br>
+> Для голосовых каналов Discord потребуется VPN.
+
 ## 📄 Лицензия
 
 Этот проект распространяется на условиях лицензии MIT.  
@@ -48,11 +53,29 @@ $HOME/zapret-configs/install.sh
 zapret-config
 ```
 
-**Доступные конфигурации:**
-- `general` — базовая конфигурация
-- `general(ALT)` до `general(ALT11)` — альтернативные варианты
-- `general (FAKE_TLS_AUTO)` и варианты — с автогенерацией TLS
-- `general (SIMPLE FAKE)` — оптимизировано для МГТС
+**Доступные конфигурации (tpws-стратегии для macOS):**
+
+| Конфигурация             | Стратегия                                  | Описание                        |
+|--------------------------|--------------------------------------------|---------------------------------|
+| `oob-split1`             | `--split-pos=1 --oob`                      | OOB байт, разрез на позиции 1   |
+| `oob-midsld`             | `--split-pos=midsld --oob`                 | OOB байт, разрез в середине SLD |
+| `oob-split1-midsld`      | `--split-pos=1,midsld --oob`               | OOB байт, два разреза           |
+| `oob-tlsrec-midsld`      | `--tlsrec=midsld --split-pos=1 --oob`      | OOB + TLS record split          |
+| `oob-tlsrec-1`           | `--tlsrec=1 --split-pos=1 --oob`           | OOB + TLS record на позиции 1   |
+| `oob-tlsrec-sniext1`     | `--tlsrec=sniext+1 --split-pos=1 --oob`    | OOB + TLS record после SNI      |
+| `oob-split1-anyproto`    | `--split-pos=1 --oob --split-any-protocol` | OOB для всех протоколов         |
+| `disorder-split1`        | `--split-pos=1 --disorder`                 | Обратный порядок фрагментов     |
+| `disorder-midsld`        | `--split-pos=midsld --disorder`            | Disorder, разрез в середине SLD |
+| `disorder-split1-midsld` | `--split-pos=1,midsld --disorder`          | Disorder, два разреза           |
+| `disorder-tlsrec-midsld` | `--tlsrec=midsld --split-pos=1 --disorder` | Disorder + TLS record split     |
+| `tlsrec-midsld`          | `--tlsrec=midsld --split-pos=1`            | Только TLS record split         |
+| `tlsrec-1`               | `--tlsrec=1 --split-pos=1`                 | TLS record на позиции 1         |
+| `split-1`                | `--split-pos=1`                            | Только TCP split на позиции 1   |
+| `split-midsld`           | `--split-pos=midsld`                       | Только TCP split в середине SLD |
+| `split-1-midsld`         | `--split-pos=1,midsld`                     | Два TCP split                   |
+
+> [!NOTE]
+> На macOS `--oob` и `--disorder` **не могут** использоваться одновременно. Рекомендуется начать с `oob-tlsrec-midsld` или `oob-split1`.
 
 > [!IMPORTANT]
 > После выбора конфигурации скрипт запустит `install_easy.sh`, который будет запрашивать подтверждение - **просто нажимайте ENTER для принятия значений по умолчанию.**
