@@ -49,7 +49,7 @@ GZIP_LISTS=1
 DESYNC_MARK=0x40000000
 DESYNC_MARK_POSTNAT=0x20000000
 
-TPWS_SOCKS_ENABLE=0
+TPWS_SOCKS_ENABLE=1
 # tpws socks listens on this port on localhost and LAN interfaces
 TPPORT_SOCKS=987
 # use <HOSTLIST> and <HOSTLIST_NOAUTO> placeholders to engage standard hostlists and autohostlist in ipset dir
@@ -60,7 +60,7 @@ TPWS_SOCKS_OPT="
 --filter-tcp=443 --split-pos=1,midsld --disorder <HOSTLIST>
 "
 
-TPWS_ENABLE=0
+TPWS_ENABLE=1
 TPWS_PORTS=80,443
 # use <HOSTLIST> and <HOSTLIST_NOAUTO> placeholders to engage standard hostlists and autohostlist in ipset dir
 # hostlist markers are replaced to empty string if MODE_FILTER does not satisfy
@@ -70,7 +70,7 @@ TPWS_OPT="
 --filter-tcp=443 --split-pos=1,midsld --disorder <HOSTLIST>
 "
 
-NFQWS_ENABLE=1
+NFQWS_ENABLE=0
 # redirect outgoing traffic with connbytes limiter applied in both directions.
 NFQWS_PORTS_TCP=80,443
 NFQWS_PORTS_UDP=443,50000-65535
