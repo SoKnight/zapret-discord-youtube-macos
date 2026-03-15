@@ -75,7 +75,8 @@ zapret-config
 | `split-1-midsld`         | `--split-pos=1,midsld`                     | Два TCP split                   |
 
 > [!NOTE]
-> На macOS `--oob` и `--disorder` **не могут** использоваться одновременно. Рекомендуется начать с `oob-tlsrec-midsld` или `oob-split1`.
+> На macOS `--oob` и `--disorder` **не могут** использоваться одновременно.<br>
+> Рекомендуется начать с `oob-tlsrec-midsld` или `oob-split1`.
 
 > [!IMPORTANT]
 > После выбора конфигурации скрипт запустит `install_easy.sh`, который будет запрашивать подтверждение - **просто нажимайте ENTER для принятия значений по умолчанию.**
