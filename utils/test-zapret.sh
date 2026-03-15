@@ -194,7 +194,7 @@ set_ipset_mode() {
 # --- DPI ---
 
 # Значения по умолчанию (переопределяются через MONITOR_* env vars)
-DPI_TIMEOUT=${MONITOR_TIMEOUT:-5}
+DPI_TIMEOUT=${MONITOR_TIMEOUT:-3}
 DPI_RANGE=${MONITOR_RANGE:-262144}
 DPI_WARN_MIN_KB=${MONITOR_WARN_MINKB:-14}
 DPI_WARN_MAX_KB=${MONITOR_WARN_MAXKB:-22}
@@ -260,6 +260,12 @@ test_url() {
   output=$(curl -I -s -m "$timeout" -o /dev/null -w '%{http_code} %{size_download}' --show-error $args "$url" 2>&1)
   local code=$?
 
+  # Таймаут (curl exit code 28)
+  if [[ "$code" -eq 28 ]]; then
+    echo "TIMEOUT 0"
+    return
+  fi
+
   # Проверка на SSL ошибки
   if echo "$output" | grep -qiE 'Could not resolve host|certificate|SSL certificate problem|self[- ]?signed|certificate verify failed|unable to get local issuer certificate'; then
     echo "SSL 0"
@@ -270,7 +276,7 @@ test_url() {
   http_code=$(echo "$output" | grep -oE '^[0-9]+' | head -1)
   size=$(echo "$output" | grep -oE '[0-9]+$' | tail -1)
 
-  if [[ -z "$http_code" ]]; then
+  if [[ -z "$http_code" || "$http_code" == "000" ]]; then
     if echo "$output" | grep -qiE 'not supported|does not support|unsupported' || [[ "$code" -eq 35 ]]; then
       echo "UNSUP 0"
     else
@@ -279,11 +285,7 @@ test_url() {
     return
   fi
 
-  if [[ "$code" -eq 0 ]]; then
-    echo "OK ${size:-0}"
-  else
-    echo "ERR 0"
-  fi
+  echo "OK ${size:-0}"
 }
 
 test_ping() {
@@ -347,8 +349,9 @@ run_standard_tests() {
 
         tcolor="$C_GREEN"
         case "$tstatus" in
-          SSL|ERR) tcolor="$C_RED" ;;
-          UNSUP)   tcolor="$C_YELLOW" ;;
+          SSL|ERR)     tcolor="$C_RED" ;;
+          TIMEOUT)     tcolor="$C_YELLOW" ;;
+          UNSUP)       tcolor="$C_YELLOW" ;;
         esac
 
         results_line+="$(colorize "${test_label}:${tstatus}" "$tcolor") "
@@ -387,9 +390,10 @@ run_dpi_tests() {
       local msg_status="OK"
 
       case "$result_status" in
-        SSL)  color="$C_RED";    msg_status="SSL_ERROR" ;;
-        UNSUP) color="$C_YELLOW"; msg_status="НЕ_ПОДДЕРЖИВАЕТСЯ" ;;
-        ERR)  color="$C_RED";    msg_status="ОШИБКА" ;;
+        SSL)     color="$C_RED";    msg_status="SSL_ERROR" ;;
+        TIMEOUT) color="$C_YELLOW"; msg_status="ТАЙМАУТ" ;;
+        UNSUP)   color="$C_YELLOW"; msg_status="НЕ_ПОДДЕРЖИВАЕТСЯ" ;;
+        ERR)     color="$C_RED";    msg_status="ОШИБКА" ;;
       esac
 
       if [[ "$size_kb" -ge "$warn_min_kb" && "$size_kb" -le "$warn_max_kb" && "$result_status" == "ERR" ]]; then
