@@ -152,6 +152,7 @@ sudo /opt/zapret/uninstall_easy.sh
 
 ## ✅ Протестировано на
 
+- macOS 26.3.1 (Tahoe)
 - macOS 15.6.1 (Sequoia)
 
 ## ❓ Решение проблем
