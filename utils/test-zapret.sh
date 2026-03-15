@@ -307,16 +307,16 @@ test_ping() {
 
 load_targets() {
   local targets_file="$1"
+  local tname tvalue
   while IFS= read -r line; do
     # Пропускаем комментарии и пустые строки
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
     [[ ! "$line" =~ = ]] && continue
 
-    local name value
-    name=$(echo "$line" | sed -E 's/^[[:space:]]*([[:alnum:]_]+)[[:space:]]*=.*/\1/')
-    value=$(echo "$line" | sed -E 's/.*=[[:space:]]*"([^"]+)".*/\1/')
+    tname=$(echo "$line" | sed -E 's/^[[:space:]]*([[:alnum:]_]+)[[:space:]]*=.*/\1/')
+    tvalue=$(echo "$line" | sed -E 's/.*=[[:space:]]*"([^"]+)".*/\1/')
 
-    [[ -n "$name" && -n "$value" ]] && echo "${name}|${value}"
+    [[ -n "$tname" && -n "$tvalue" ]] && echo "${tname}|${tvalue}"
   done < "$targets_file"
 }
 
@@ -325,34 +325,38 @@ run_standard_tests() {
   echo "$(colorize "  > Запуск тестов..." "$C_DARKGRAY")"
   write_log "> Запуск тестов..."
 
-  load_targets "$targets_file" | while IFS='|' read -r name value; do
-    printf "  %-30s " "$name"
+  local -a target_lines=("${(@f)$(load_targets "$targets_file")}")
+  local tname tvalue toutput tstatus tcolor results_line log_line
 
-    if [[ "$value" == PING:* ]]; then
-      local host="${value#PING:}"
-      local result
-      result=$(test_ping "$host" 3)
-      echo "$(colorize "Пинг: $result" "$C_CYAN")"
-      write_log "$(printf '%-30s Пинг: %s' "$name" "$result")"
+  for target_entry in "${target_lines[@]}"; do
+    tname="${target_entry%%|*}"
+    tvalue="${target_entry#*|}"
+    printf "  %-30s " "$tname"
+
+    if [[ "$tvalue" == PING:* ]]; then
+      local host="${tvalue#PING:}"
+      toutput=$(test_ping "$host" 3)
+      echo "$(colorize "Пинг: $toutput" "$C_CYAN")"
+      write_log "$(printf '%-30s Пинг: %s' "$tname" "$toutput")"
     else
-      local results_line="" log_line=""
+      results_line=""
+      log_line=""
       for test_label in HTTP TLS1.2 TLS1.3; do
-        local output
-        output=$(test_url "$value" "$timeout" "$test_label")
-        local status="${output%% *}"
+        toutput=$(test_url "$tvalue" "$timeout" "$test_label")
+        tstatus="${toutput%% *}"
 
-        local color="$C_GREEN"
-        case "$status" in
-          SSL|ERR) color="$C_RED" ;;
-          UNSUP)   color="$C_YELLOW" ;;
+        tcolor="$C_GREEN"
+        case "$tstatus" in
+          SSL|ERR) tcolor="$C_RED" ;;
+          UNSUP)   tcolor="$C_YELLOW" ;;
         esac
 
-        results_line+="$(colorize "${test_label}:${status}" "$color") "
-        log_line+="${test_label}:${status} "
+        results_line+="$(colorize "${test_label}:${tstatus}" "$tcolor") "
+        log_line+="${test_label}:${tstatus} "
       done
 
       echo "$results_line"
-      write_log "$(printf '%-30s %s' "$name" "$log_line")"
+      write_log "$(printf '%-30s %s' "$tname" "$log_line")"
     fi
   done
 }
@@ -376,25 +380,25 @@ run_dpi_tests() {
     for test_label in HTTP TLS1.2 TLS1.3; do
       local output
       output=$(test_url "$url" "$timeout" "$test_label")
-      local status="${output%% *}"
+      local result_status="${output%% *}"
       local size="${output##* }"
       local size_kb=$(( size / 1024 ))
       local color="$C_GREEN"
       local msg_status="OK"
 
-      case "$status" in
+      case "$result_status" in
         SSL)  color="$C_RED";    msg_status="SSL_ERROR" ;;
         UNSUP) color="$C_YELLOW"; msg_status="НЕ_ПОДДЕРЖИВАЕТСЯ" ;;
         ERR)  color="$C_RED";    msg_status="ОШИБКА" ;;
       esac
 
-      if [[ "$size_kb" -ge "$warn_min_kb" && "$size_kb" -le "$warn_max_kb" && "$status" == "ERR" ]]; then
+      if [[ "$size_kb" -ge "$warn_min_kb" && "$size_kb" -le "$warn_max_kb" && "$result_status" == "ERR" ]]; then
         msg_status="ВЕРОЯТНО_ЗАБЛОКИРОВАНО"
         color="$C_YELLOW"
         target_warned=true
       fi
 
-      local msg="  [$id][$test_label] code=$status size=$size bytes (~${size_kb} KB) status=$msg_status"
+      local msg="  [$id][$test_label] code=$result_status size=$size bytes (~${size_kb} KB) status=$msg_status"
       echo "$(colorize "$msg" "$color")"
       write_log "$msg"
     done
@@ -423,17 +427,17 @@ run_dpi_tests() {
 
 read_mode_selection() {
   while true; do
-    echo ""
-    echo "$(colorize "Выберите режим тестирования:" "$C_CYAN")"
-    echo "  [1] Все конфиги"
-    echo "  [2] Выбранные конфиги"
-    printf "Введите 1 или 2: "
-    read -r choice
+    echo "" >&2
+    echo "$(colorize "Выберите режим тестирования:" "$C_CYAN")" >&2
+    echo "  [1] Все конфиги" >&2
+    echo "  [2] Выбранные конфиги" >&2
+    printf "Введите 1 или 2: " >&2
+    read -r choice </dev/tty
 
     case "$choice" in
       1) echo "all"; return ;;
       2) echo "select"; return ;;
-      *) echo "$(colorize "Неверный ввод. Попробуйте снова." "$C_YELLOW")" ;;
+      *) echo "$(colorize "Неверный ввод. Попробуйте снова." "$C_YELLOW")" >&2 ;;
     esac
   done
 }
@@ -442,16 +446,16 @@ select_configs() {
   local -a all_configs=("$@")
 
   while true; do
-    echo ""
-    echo "$(colorize "Доступные конфиги:" "$C_CYAN")"
+    echo "" >&2
+    echo "$(colorize "Доступные конфиги:" "$C_CYAN")" >&2
     for (( i=1; i<=${#all_configs[@]}; i++ )); do
-      printf "  [%2d] %s\n" "$i" "${all_configs[$i]}"
+      printf "  [%2d] %s\n" "$i" "${all_configs[$i]}" >&2
     done
 
-    echo ""
-    echo "Введите номера конфигов для тестирования (через запятую, например 1,3,5):"
-    printf "> "
-    read -r input
+    echo "" >&2
+    echo "Введите номера конфигов для тестирования (через запятую, например 1,3,5):" >&2
+    printf "> " >&2
+    read -r input </dev/tty
 
     local -a selected=()
     for num_str in ${(s:,:)input}; do
@@ -462,9 +466,9 @@ select_configs() {
     done
 
     if [[ ${#selected[@]} -eq 0 ]]; then
-      echo "$(colorize "[WARN] Некорректный ввод. Попробуйте снова." "$C_YELLOW")"
+      echo "$(colorize "[WARN] Некорректный ввод. Попробуйте снова." "$C_YELLOW")" >&2
     else
-      echo "$(colorize "[OK] Выбрано конфигов: ${#selected[@]}" "$C_GREEN")"
+      echo "$(colorize "[OK] Выбрано конфигов: ${#selected[@]}" "$C_GREEN")" >&2
       echo "${(j:\n:)selected}"
       return
     fi
@@ -475,8 +479,10 @@ select_configs() {
 
 main() {
   # Определяем директорию utils, где лежит сам скрипт
-  local utils_dir="${0:a:h}"
-  local root_dir="${utils_dir:h}"
+  local script_path="${(%):-%x}"
+  [[ "$script_path" != /* ]] && script_path="$(cd "$(dirname "$script_path")" && pwd)/$(basename "$script_path")"
+  local utils_dir="$(dirname "$script_path")"
+  local root_dir="$(dirname "$utils_dir")"
 
   local configs_dir="$root_dir/configs"
   local targets_file="$utils_dir/targets.txt"
@@ -529,7 +535,7 @@ main() {
   echo "  [1] Стандартные тесты (HTTP/ping)"
   echo "  [2] DPI checkers (TCP 16-20 freeze)"
   printf "Введите 1 или 2: "
-  read -r test_type_choice
+  read -r test_type_choice </dev/tty
 
   # Выбор режима тестирования
   local mode
