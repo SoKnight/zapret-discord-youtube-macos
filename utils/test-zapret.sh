@@ -257,7 +257,7 @@ test_url() {
   esac
 
   local output
-  output=$(curl -I -s -m "$timeout" -o /dev/null -w '%{http_code} %{size_download}' --show-error "${args[@]}" "$url" 2>&1)
+  output=$(HTTPS_PROXY= HTTP_PROXY= ALL_PROXY= curl -I -s -m "$timeout" -o /dev/null -w '%{http_code} %{size_download}' --show-error --socks5-hostname 127.0.0.1:987 "${args[@]}" "$url" 2>&1)
   local code=$?
 
   # Таймаут (curl exit code 28)
