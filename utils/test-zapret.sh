@@ -248,21 +248,27 @@ build_dpi_targets() {
 
 test_url() {
   local url="$1" timeout="$2" test_label="$3"
-  local args=""
+  local -a args=()
 
   case "$test_label" in
-    HTTP)   args="--http1.1" ;;
-    TLS1.2) args="--tlsv1.2 --tls-max 1.2" ;;
-    TLS1.3) args="--tlsv1.3 --tls-max 1.3" ;;
+    HTTP)   args=(--http1.1) ;;
+    TLS1.2) args=(--tlsv1.2) ;;
+    TLS1.3) args=(--tlsv1.3) ;;
   esac
 
   local output
-  output=$(curl -I -s -m "$timeout" -o /dev/null -w '%{http_code} %{size_download}' --show-error $args "$url" 2>&1)
+  output=$(curl -I -s -m "$timeout" -o /dev/null -w '%{http_code} %{size_download}' --show-error "${args[@]}" "$url" 2>&1)
   local code=$?
 
   # Таймаут (curl exit code 28)
   if [[ "$code" -eq 28 ]]; then
     echo "TIMEOUT 0"
+    return
+  fi
+
+  # Неподдерживаемая фича (curl exit code 4)
+  if [[ "$code" -eq 4 ]]; then
+    echo "UNSUP 0"
     return
   fi
 
