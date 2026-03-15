@@ -122,36 +122,6 @@ if ! git clone https://github.com/SoKnight/zapret-discord-youtube-macos.git "$HO
   exit 1
 fi
 
-# Скачиваем бинарники TLS в папку fake
-FAKE_BIN_DIR="/opt/zapret/files/fake"
-sudo mkdir -p "$FAKE_BIN_DIR"
-sudo chown "$TARGET_USER:$TARGET_GROUP" "$FAKE_BIN_DIR"
-GITHUB_BIN_URL="https://github.com/Flowseal/zapret-discord-youtube/raw/refs/heads/main/bin"
-
-# Массив бинарников для скачивания
-declare -a BINARIES=(
-  "tls_clienthello_4pda_to.bin"
-  "tls_clienthello_max_ru.bin"
-  "stun.bin"
-)
-
-echo "Скачивание бинарников TLS..."
-for BINARY in "${BINARIES[@]}"; do
-  DEST="$FAKE_BIN_DIR/$BINARY"
-  URL="$GITHUB_BIN_URL/$BINARY"
-
-  if [ ! -f "$DEST" ]; then
-    echo "Скачивание $BINARY..."
-    if ! wget -q -O "$DEST" "$URL"; then
-      echo "Ошибка: не удалось скачать $BINARY с $URL"
-      exit 1
-    fi
-    echo "$BINARY успешно скачан"
-  else
-    echo "$BINARY уже существует, пропускаем"
-  fi
-done
-
 # Копирование hostlists
 echo "Копирование hostlists..."
 if ! cp -r "$HOME/zapret-configs/hostlists" /opt/zapret/hostlists; then
