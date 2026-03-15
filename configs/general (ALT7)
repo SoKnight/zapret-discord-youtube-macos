@@ -10,7 +10,7 @@
 #WS_USER=nobody
 
 # override firewall type : iptables,nftables,ipfw
-FWTYPE=iptables
+FWTYPE=pf
 # nftables only : set this to 0 to use pre-nat mode. default is post-nat.
 # pre-nat mode disables some bypass techniques for forwarded traffic but allows to see client IP addresses in debug log
 #POSTNAT=0
