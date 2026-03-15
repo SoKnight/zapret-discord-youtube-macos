@@ -164,7 +164,8 @@ setup_shell_shortcuts() {
   # Цикл повторяет вопрос, пока не получит правильный ответ
   while true; do
     echo "Добавить быстрые команды zapret-config и zapret-switch? [Y/n]"
-    read -r "?> " response
+    echo -n "> "
+    read -r response
 
     # Нормализуем ответ (учитываем русскую раскладку и регистр)
     case "${(L)response}" in
@@ -223,7 +224,6 @@ setup_shell_shortcuts() {
     echo "alias zapret-utils='\$HOME/zapret-configs/utils-zapret.sh'" >> "$shell_config"
     alias_switch_added=1
   fi
-
 
   # вывод сообщений в терминал
   if [ $alias_config_added -eq 1 ] || [ $alias_switch_added -eq 1 ]; then

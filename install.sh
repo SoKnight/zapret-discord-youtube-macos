@@ -26,7 +26,11 @@ fi
 # Собираем список конфигов
 choose_config() {
   local dir="$1"
-  local entries=("$dir"/*)
+  local entries=("$dir"/*(N))
+
+  # Убираем .DS_Store и скрытые файлы macOS
+  entries=(${entries:#*/.DS_Store})
+  entries=(${entries:#*/.*})
 
   if [ ${#entries[@]} -eq 0 ]; then
     echo "Ошибка: в папке $dir нет файлов или подкаталогов."
@@ -39,7 +43,8 @@ choose_config() {
     fi
 
     echo "Выберите конфиг или папку для входа:"
-    for i in $(seq 1 ${#entries[@]}); do
+    for i in {1..${#entries[@]}}; do
+      [[ -e "${entries[$i]}" ]] || continue
       name="$(basename "${entries[$i]}")"
       if [ -d "${entries[$i]}" ]; then
         echo "$i. [Папка] $name"
@@ -49,7 +54,8 @@ choose_config() {
     done
     echo "0. Назад"
 
-    read -r "?Введите номер: " choice
+    echo -n "Введите номер: "
+    read -r choice
 
     if [ "$choice" = "0" ]; then
       return 1

@@ -103,7 +103,8 @@ ipset_menu() {
   echo "3. Режим 'loaded' (полный список)"
   echo "0. Назад"
   echo
-  read -r "?Выберите режим: " ipset_choice
+  echo -n "Выберите режим: "
+  read -r ipset_choice
   
   case $ipset_choice in
     1)
@@ -202,7 +203,8 @@ update_hosts() {
     cat "$temp_file"
     echo "---"
     echo
-    read -r "?Добавить содержимое в $hosts_file? [Y/n]: " response
+    echo -n "Добавить содержимое в $hosts_file? [Y/n]: "
+    read -r response
     
     case "${(L)response}" in
       y|yes|"")
@@ -290,15 +292,18 @@ add_domains_menu() {
   echo "2. Добавить в list-exclude-user.txt"
   echo "0. Назад"
   echo
-  read -r "?Выберите действие: " choice
+  echo -n "Выберите действие: "
+  read -r choice
   
   case $choice in
     1)
-      read -r "?Введите домен или URL: " input
+      echo -n "Введите домен или URL: "
+      read -r input
       add_domain "$input" "$LIST_GENERAL"
       ;;
     2)
-      read -r "?Введите домен или URL: " input
+      echo -n "Введите домен или URL: "
+      read -r input
       add_domain "$input" "$LIST_EXCLUDE"
       ;;
     0) return ;;
@@ -352,7 +357,8 @@ while true; do
   echo "----------------------------------------"
   echo "0. Выход"
   echo
-  read -r "?Выберите опцию (0-5): " CHOICE
+  echo -n "Выберите опцию (0-5): "
+  read -r CHOICE
   case $CHOICE in
     1) ipset_menu ;;
     2) update_ipset ;;
