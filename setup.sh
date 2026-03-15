@@ -105,24 +105,27 @@ if ! sudo mv "$ZAPRET_EXTRACT_DIR" /opt/zapret; then
 fi
 
 # Передаём права пользователю
-TARGET_USER=$(logname 2>/dev/null || id -un 2>/dev/null || echo "$USER")
+TARGET_USER="${SUDO_USER:-${USER:-$(id -un 2>/dev/null)}}"
 TARGET_GROUP=$(id -gn "$TARGET_USER" 2>/dev/null || echo "$TARGET_USER")
+echo "Целевой пользователь: $TARGET_USER:$TARGET_GROUP"
 sudo chown -R "$TARGET_USER:$TARGET_GROUP" /opt/zapret
 sudo chmod -R u+rwX,go+rX /opt/zapret
 sudo find /opt/zapret -type d -exec chmod g+s {} \;
 
 # Клонирование репозитория с конфигами
 echo "Клонирование репозитория с конфигами..."
+if [ -d "$HOME/zapret-configs" ]; then
+  rm -rf "$HOME/zapret-configs"
+fi
 if ! git clone https://github.com/SoKnight/zapret-discord-youtube-macos.git "$HOME/zapret-configs"; then
-  rm -rf $HOME/zapret-configs
-  if ! git clone https://github.com/SoKnight/zapret-discord-youtube-macos.git "$HOME/zapret-configs"; then
-    echo "Ошибка: не удалось клонировать репозиторий с конфигами."
+  echo "Ошибка: не удалось клонировать репозиторий с конфигами."
   exit 1
-  fi
 fi
 
 # Скачиваем бинарники TLS в папку fake
 FAKE_BIN_DIR="/opt/zapret/files/fake"
+sudo mkdir -p "$FAKE_BIN_DIR"
+sudo chown "$TARGET_USER:$TARGET_GROUP" "$FAKE_BIN_DIR"
 GITHUB_BIN_URL="https://github.com/Flowseal/zapret-discord-youtube/raw/refs/heads/main/bin"
 
 # Массив бинарников для скачивания
